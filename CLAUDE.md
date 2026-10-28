@@ -38,7 +38,8 @@ React 19 + TypeScript + Vite 8, Vitest, vite-plugin-pwa (Workbox, registerType '
 - Placeholders honestos: Improvisação, Ouvido musical.
 
 ## Próximo passo combinado
-Usuário vai usar a Fase 1 por alguns dias e trazer o que travou. Depois: Fase 2 (intervalos e referências), reaproveitando `src/music/intervals.ts`. Ainda não publicado em HTTPS (sugestão: Netlify/Vercel/GitHub Pages com `dist/`).
+Usuário vai usar a Fase 1 por alguns dias e trazer o que travou. Depois: Fase 2 (intervalos e referências), reaproveitando `src/music/intervals.ts`. Publicado em https://arquitetojg-sudo.github.io/guitar-lab/ (repo público arquitetojg-sudo/guitar-lab). Todo push na `master` roda testes + build e publica via `.github/workflows/deploy.yml`. O `gh` está em `%LOCALAPPDATA%\Microsoft\WinGet\Links\gh.exe`.
+- "Já sei isso" por aula e prova da fase (`/prova/1`) permitem pular conteúdo já conhecido com ≥ 80% sem ajuda (`testedOutAt` no progresso).
 
 ## Forma de trabalhar
 Em etapas; em cada etapa relatar o que foi implementado, testes que passaram, limitações e próximo passo. Não declarar nada concluído sem verificar. O usuário prefere tom casual e quer que você sinalize quando a conversa entrar em detalhes irrelevantes para o projeto atual.
