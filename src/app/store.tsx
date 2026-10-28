@@ -143,6 +143,23 @@ function useStoreImpl() {
         const lp = cur().lessonProgress[lessonId] ?? blankProgress(lessonId);
         saveProgress({ ...lp, quizRuns: lp.quizRuns + 1, bestQuizScore: Math.max(lp.bestQuizScore, score) });
       },
+      /** Conclui aulas pelo teste direto ("Já sei isso" ou prova da fase). */
+      testOut(lessonIds: string[], score: number) {
+        const now = Date.now();
+        for (const id of lessonIds) {
+          const lp = cur().lessonProgress[id] ?? blankProgress(id);
+          if (lp.completedAt) continue;
+          saveProgress({
+            ...lp,
+            steps: { ...lp.steps, memorizar: lp.steps.memorizar ?? now },
+            bestQuizScore: Math.max(lp.bestQuizScore, score),
+            quizRuns: lp.quizRuns + 1,
+            completedAt: now,
+            testedOutAt: now,
+            lastVisitedAt: now,
+          });
+        }
+      },
       resetLesson(lessonId: string) {
         const lp = cur().lessonProgress[lessonId];
         // mantém completedAt: rever uma aula não bloqueia as seguintes

@@ -57,6 +57,8 @@ export interface LessonProgress {
   bestQuizScore: number; // 0–1
   quizRuns: number;
   completedAt?: number;
+  /** Concluída pelo "Já sei isso" ou pela prova da fase (sem fazer as etapas). */
+  testedOutAt?: number;
   lastVisitedAt: number;
 }
 

@@ -174,3 +174,65 @@ describe('backup', () => {
     expect(await db.getAll('attempts')).toHaveLength(1);
   });
 });
+
+import { canTestOut, pendingPhaseLessons, phaseTestOutcome, lessonState } from './progress';
+import type { LessonProgress } from '../storage/types';
+
+describe('pular o que já sabe', () => {
+  const done = (id: string): LessonProgress => ({ lessonId: id, steps: {}, bestQuizScore: 1, quizRuns: 1, completedAt: 1, lastVisitedAt: 1 });
+
+  it('"Já sei isso" só aparece em aula liberada e não concluída', () => {
+    const afin = lessonById('f1-afinacao')!;
+    const crom = lessonById('f1-cromatica')!;
+    expect(canTestOut(afin, {})).toBe(true);
+    expect(canTestOut(crom, {})).toBe(false); // bloqueada
+    expect(canTestOut(afin, { 'f1-afinacao': done('f1-afinacao') })).toBe(false); // já concluída
+    expect(canTestOut(crom, { 'f1-afinacao': done('f1-afinacao') })).toBe(true);
+  });
+
+  it('aula concluída pelo teste libera a seguinte', () => {
+    const p = { 'f1-afinacao': done('f1-afinacao') };
+    expect(lessonState(lessonById('f1-cromatica')!, p)).toBe('available');
+  });
+
+  it('aulas pendentes da fase 1 seguem a ordem da trilha', () => {
+    expect(pendingPhaseLessons(1, {}).length).toBe(11);
+    const p = { 'f1-afinacao': done('f1-afinacao'), 'f1-cromatica': done('f1-cromatica') };
+    const pend = pendingPhaseLessons(1, p);
+    expect(pend.length).toBe(9);
+    expect(pend[0].id).toBe('f1-cordas-mi');
+    expect(pendingPhaseLessons(2, {})).toEqual([]);
+  });
+
+  it('prova da fase: ≥ 80% no geral conclui tudo', () => {
+    // 8 de 10 = 80%
+    const r = phaseTestOutcome([
+      { lessonId: 'a', clean: 2, total: 2 },
+      { lessonId: 'b', clean: 1, total: 2 },
+      { lessonId: 'c', clean: 2, total: 2 },
+      { lessonId: 'd', clean: 1, total: 2 },
+      { lessonId: 'e', clean: 2, total: 2 },
+    ], 0.8);
+    expect(r).toEqual({ pass: ['a', 'b', 'c', 'd', 'e'], passedAll: true });
+  });
+
+  it('prova da fase abaixo de 80%: conclui só até a primeira aula com erro', () => {
+    // 6 de 10 = 60%
+    const r = phaseTestOutcome([
+      { lessonId: 'a', clean: 2, total: 2 },
+      { lessonId: 'b', clean: 2, total: 2 },
+      { lessonId: 'c', clean: 1, total: 2 },
+      { lessonId: 'd', clean: 1, total: 2 },
+      { lessonId: 'e', clean: 0, total: 2 },
+    ], 0.8);
+    expect(r).toEqual({ pass: ['a', 'b'], stopAt: 'c', passedAll: false });
+  });
+
+  it('prova da fase: erro na primeira aula não conclui nada', () => {
+    const r = phaseTestOutcome([
+      { lessonId: 'a', clean: 0, total: 2 },
+      { lessonId: 'b', clean: 2, total: 2 },
+    ], 0.8);
+    expect(r).toEqual({ pass: [], stopAt: 'a', passedAll: false });
+  });
+});

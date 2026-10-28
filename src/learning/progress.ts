@@ -36,3 +36,49 @@ export function trailProgress(progress: Record<string, LessonProgress>) {
   const done = LESSONS.filter((l) => progress[l.id]?.completedAt).length;
   return { done, total: LESSONS.length };
 }
+
+/**
+ * "Já sei isso": quem já domina um assunto pode ir direto ao teste sem consulta.
+ * O critério continua o mesmo (≥ 80% sem ajuda); só o caminho deixa de ser obrigatório.
+ */
+export function canTestOut(lesson: Lesson, progress: Record<string, LessonProgress>): boolean {
+  const s = lessonState(lesson, progress);
+  return s === 'available' || s === 'in-progress';
+}
+
+/** Aulas de uma fase que ainda não foram concluídas, na ordem da trilha. */
+export function pendingPhaseLessons(phase: number, progress: Record<string, LessonProgress>): Lesson[] {
+  return LESSONS.filter((l) => l.phase === phase && !progress[l.id]?.completedAt);
+}
+
+export interface PhaseTestOutcome {
+  /** Aulas a marcar como concluídas. */
+  pass: string[];
+  /** Primeira aula que precisa ser feita (onde houve erro), se houver. */
+  stopAt?: string;
+  passedAll: boolean;
+}
+
+/**
+ * Resultado da prova da fase.
+ * - Nota geral ≥ passScore → todas as aulas testadas são concluídas.
+ * - Abaixo disso → conclui, na ordem da trilha, as aulas em que todas as
+ *   respostas foram certas sem ajuda, até a primeira com erro. A trilha segue a
+ *   partir dali, sem pular nada que você ainda não mostrou saber.
+ */
+export function phaseTestOutcome(
+  perLesson: { lessonId: string; clean: number; total: number }[],
+  passScore: number,
+): PhaseTestOutcome {
+  const total = perLesson.reduce((s, x) => s + x.total, 0);
+  const clean = perLesson.reduce((s, x) => s + x.clean, 0);
+  if (total > 0 && clean / total >= passScore) {
+    return { pass: perLesson.map((x) => x.lessonId), passedAll: true };
+  }
+  const pass: string[] = [];
+  for (const x of perLesson) {
+    if (x.total > 0 && x.clean === x.total) pass.push(x.lessonId);
+    else return { pass, stopAt: x.lessonId, passedAll: false };
+  }
+  return { pass, passedAll: false };
+}

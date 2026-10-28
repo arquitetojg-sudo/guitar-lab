@@ -5,7 +5,7 @@ import { LESSONS, lessonById } from '../content/lessons';
 import type { DiagramSpec } from '../content/types';
 import { generateQuiz, mulberry32 as mulberry } from '../learning/exercises';
 import { QUIZ_PASS } from '../learning/mastery';
-import { STEPS, lessonState, nextStep } from '../learning/progress';
+import { STEPS, canTestOut, lessonState, nextStep } from '../learning/progress';
 import { Fretboard } from '../ui/Fretboard';
 import { marksFromSpec, openStringLabels } from '../ui/marks';
 import { Quiz } from '../ui/Quiz';
@@ -31,6 +31,8 @@ export function LessonPage({ id }: { id: string }) {
   const [seed, setSeed] = useState(() => Date.now());
   const [quizLevel, setQuizLevel] = useState<Level>(2);
   const [guidedDone, setGuidedDone] = useState(false);
+  /** "Já sei isso": null = fora do teste; 'running' = respondendo; número = nota final. */
+  const [testOut, setTestOut] = useState<null | 'running' | number>(null);
 
   useEffect(() => {
     if (lesson) actions.touchLesson(lesson.id);
@@ -78,8 +80,61 @@ export function LessonPage({ id }: { id: string }) {
         <a href={href('/aulas')} className="small">Trilha</a>
         <h1 style={{ marginTop: 6 }}>{lesson.title}</h1>
         <p className="muted">{lesson.goal} <span className="num">· ~{lesson.minutes} min</span></p>
-        {state === 'done' && <span className="badge ok">Concluída · melhor resultado {Math.round((p?.bestQuizScore ?? 0) * 100)}%</span>}
+        {state === 'done' && <span className="badge ok">{p?.testedOutAt ? 'Concluída pelo teste' : 'Concluída'} · melhor resultado {Math.round((p?.bestQuizScore ?? 0) * 100)}%</span>}
       </div>
+
+      {testOut === null && canTestOut(lesson, progress) && (
+        <div className="panel stack">
+          <strong>Já sabe isso?</strong>
+          <p className="small muted" style={{ margin: 0 }}>Vá direto ao teste sem consulta. Com {Math.round(QUIZ_PASS * 100)}% ou mais sem dica, a aula conta como concluída e a próxima abre.</p>
+          <div className="row">
+            <button className="btn" onClick={() => { setSeed(Date.now()); setTestOut('running'); window.scrollTo(0, 0); }}>Já sei isso: fazer o teste</button>
+          </div>
+        </div>
+      )}
+
+      {testOut !== null && (
+        <section className="stack">
+          <h2>Teste direto</h2>
+          <p className="small muted">Sem consulta. Dica ou resposta revelada contam como erro.</p>
+          <div className="panel">
+            <Quiz
+              key={`t${seed}`}
+              questions={memQs}
+              level={2}
+              lessonId={lesson.id}
+              passScore={QUIZ_PASS}
+              onFinish={(_, score) => {
+                if (score >= QUIZ_PASS) actions.testOut([lesson.id], score);
+                else actions.recordQuizRun(lesson.id, score);
+                setTestOut(score);
+              }}
+              onRestart={() => setSeed(Date.now())}
+            />
+          </div>
+          {typeof testOut === 'number' && (testOut >= QUIZ_PASS ? (
+            <div className="stack">
+              <p className="notice ok">Aula concluída. Ela continua disponível pra revisar quando quiser.</p>
+              {nextL ? (
+                <button className="btn primary" onClick={() => { setTestOut(null); navigate(`/aulas/${nextL.id}`); }}>Próxima aula: {nextL.title}</button>
+              ) : (
+                <a className="btn primary" href={href('/aulas')}>Voltar para a trilha</a>
+              )}
+            </div>
+          ) : (
+            <div className="stack">
+              <p className="notice">Ficou abaixo de {Math.round(QUIZ_PASS * 100)}%. Vale fazer a aula normal; as respostas já contam na sua evolução.</p>
+              <div className="row">
+                <button className="btn primary" onClick={() => { setTestOut(null); go('entender'); }}>Fazer a aula</button>
+                <button className="btn ghost" onClick={() => { setSeed(Date.now()); setTestOut('running'); }}>Tentar o teste de novo</button>
+              </div>
+            </div>
+          ))}
+          {testOut === 'running' && <button className="btn small ghost" onClick={() => setTestOut(null)}>Cancelar e ver a aula</button>}
+        </section>
+      )}
+
+      {testOut === null && <>
 
       <nav className="stepper" aria-label="Etapas da aula">
         {STEPS.map((s) => (
@@ -174,7 +229,9 @@ export function LessonPage({ id }: { id: string }) {
         </section>
       )}
 
-      {p && Object.keys(steps).length > 0 && (
+      </>}
+
+      {testOut === null && p && Object.keys(steps).length > 0 && (
         <div className="row">
           <button className="btn small ghost" onClick={() => { if (confirm('Refazer as etapas desta aula? A aula continua contando como concluída na trilha e seu histórico é mantido.')) { actions.resetLesson(lesson.id); go('entender'); } }}>Refazer aula do início</button>
         </div>

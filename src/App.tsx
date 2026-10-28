@@ -7,6 +7,7 @@ import { HomePage } from './pages/Home';
 import { MapPage } from './pages/MapPage';
 import { TrailPage } from './pages/Trail';
 import { LessonPage } from './pages/Lesson';
+import { PhaseTestPage } from './pages/PhaseTest';
 import { PracticePage } from './pages/Practice';
 import { CardsPage } from './pages/Cards';
 import { TechniquePage } from './pages/Technique';
@@ -54,7 +55,8 @@ function Page({ path, parts }: { path: string; parts: string[] }): ReactNode {
   switch (a) {
     case undefined: return <HomePage />;
     case 'mapa': return <MapPage />;
-    case 'aulas': return b ? <LessonPage id={b} /> : <TrailPage />;
+    case 'aulas': return b ? <LessonPage key={b} id={b} /> : <TrailPage />;
+    case 'prova': return <PhaseTestPage key={b} phase={Number(b) || 1} />;
     case 'treino': return <PracticePage />;
     case 'cards': return <CardsPage />;
     case 'tecnica': return <TechniquePage />;

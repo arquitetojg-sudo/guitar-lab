@@ -1,7 +1,7 @@
 import { useStore } from '../app/store';
 import { href } from '../app/router';
 import { LESSONS, PHASES } from '../content/lessons';
-import { lessonState, trailProgress } from '../learning/progress';
+import { lessonState, pendingPhaseLessons, trailProgress } from '../learning/progress';
 
 const STATE_LABEL = { locked: 'Bloqueada', available: 'Disponível', 'in-progress': 'Em andamento', done: 'Concluída' };
 
@@ -14,7 +14,7 @@ export function TrailPage() {
     <div className="stack-l">
       <div>
         <h1>Aulas e trilhas</h1>
-        <p className="muted">Cada aula: entender, executar, memorizar e aplicar. A seguinte só abre depois do quiz de memorização.</p>
+        <p className="muted">Cada aula: entender, executar, memorizar e aplicar. A seguinte só abre depois do quiz de memorização. Se já sabe o assunto, use "Já sei isso" dentro da aula ou a prova da fase.</p>
         <div className="meter" aria-label={`${prog.done} de ${prog.total} aulas concluídas`}><i style={{ width: `${(prog.done / prog.total) * 100}%` }} /></div>
         <p className="small muted num" style={{ marginTop: 4 }}>{prog.done} de {prog.total} aulas da Fase 1</p>
       </div>
@@ -26,6 +26,15 @@ export function TrailPage() {
             {!ph.available && <span className="badge">Em preparação</span>}
           </div>
           <p className="small muted" style={{ marginTop: 6 }}>{ph.summary}</p>
+          {ph.available && (() => {
+            const pend = pendingPhaseLessons(ph.id, data.lessonProgress).length;
+            return pend > 0 ? (
+              <div className="row" style={{ marginTop: 8 }}>
+                <a className="btn small" href={href(`/prova/${ph.id}`)}>Já sei: fazer a prova</a>
+                <span className="small muted num">{pend * 2} perguntas</span>
+              </div>
+            ) : null;
+          })()}
           {ph.available ? (
             modules.map((m) => (
               <div key={m} style={{ marginTop: 12 }}>
