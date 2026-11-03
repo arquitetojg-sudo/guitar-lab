@@ -1,8 +1,8 @@
 import {
-  STANDARD_TUNING, describeDistance, fretShift, isNaturalPc, midiAt, mod12, positionAt,
+  INTERVALS, STANDARD_TUNING, describeDistance, fretShift, isNaturalPc, midiAt, mod12, openMidi, pentatonicBox, positionAt,
   type FretPosition, type Tuning,
 } from '../music';
-import { octaveTopic } from './topics';
+import { boxTopic, intervalTopic, octaveTopic } from './topics';
 
 export type Rng = () => number;
 
@@ -32,9 +32,27 @@ export type Question =
   | { kind: 'unison'; id: string; topic: string; from: Pos; toString: number }
   | { kind: 'octave'; id: string; topic: string; from: Pos; toString: number }
   | { kind: 'distance'; id: string; topic: string; string: number; fretA: number; fretB: number }
-  | { kind: 'choice'; id: string; topic: string; prompt: string; options: string[]; answer: number; explain: string };
+  | { kind: 'choice'; id: string; topic: string; prompt: string; options: string[]; answer: number; explain: string; board?: Board }
+  /** Tocar no braço: as posições certas já vêm calculadas pela altura. */
+  | { kind: 'find'; id: string; topic: string; prompt: string; board: Board; toString: number; targets: Pos[]; hint: string };
 
-export type QuestionKind = Question['kind'];
+/** Marcação do braço de apoio em perguntas geradas (intervalos e boxes). */
+export interface BoardMark extends Pos {
+  role: 'root' | 'scale' | 'focus' | 'muted';
+  /** Rótulo fixo (grau, ou '?' para o alvo). */
+  label?: string;
+  /** Mostra o nome da nota em vez do rótulo. */
+  showName?: boolean;
+  /** Rótulo revelado depois da resposta. */
+  answerLabel?: string;
+}
+export interface Board {
+  maxFret: number;
+  marks: BoardMark[];
+}
+
+/** Tipos que o QuizSpec pode pedir. Os de intervalo e box viram perguntas 'choice' ou 'find'. */
+export type QuestionKind = Question['kind'] | 'interval-name' | 'interval-find' | 'box-degree' | 'box-find' | 'box-start';
 
 export type Answer = { pos: Pos } | { pc: number } | { index: number };
 
@@ -56,6 +74,104 @@ export interface QuizSpec {
   /** Pares [origem, destino] para exercícios de oitava. */
   octavePairs?: [number, number][];
   choices?: ChoiceItem[];
+  /** Intervalos (em semitons) dos exercícios de intervalo. 12 = oitava. */
+  intervals?: number[];
+  /** 'same': alvo na mesma corda · 'cross': alvo em outra corda (ver intervalOffsets). */
+  intervalMode?: 'same' | 'cross';
+  /** Quantas cordas acima da tônica fica o alvo no modo 'cross' (padrão: [1], a corda vizinha). */
+  intervalOffsets?: number[];
+  /** Tonalidades (pc da tônica) e boxes dos exercícios de pentatônica. */
+  keys?: number[];
+  boxes?: number[];
+  scale?: 'minorPentatonic' | 'majorPentatonic';
+}
+
+export const intervalLabel = (s: number) => (s === 12 ? '8' : INTERVALS[s].short);
+export const intervalName = (s: number) => (s === 12 ? 'Oitava' : INTERVALS[s].name);
+
+const MINOR_PT = ['Dó', 'Dó♯', 'Ré', 'Mi♭', 'Mi', 'Fá', 'Fá♯', 'Sol', 'Sol♯', 'Lá', 'Si♭', 'Si'];
+const MAJOR_PT = ['Dó', 'Ré♭', 'Ré', 'Mi♭', 'Mi', 'Fá', 'Fá♯', 'Sol', 'Lá♭', 'Lá', 'Si♭', 'Si'];
+
+/** Nome da tonalidade com a grafia convencional (Fá♯ menor, Si♭ maior…). */
+export function keyName(pc: number, scale: 'minorPentatonic' | 'majorPentatonic'): string {
+  return scale === 'majorPentatonic' ? `${MAJOR_PT[mod12(pc)]} maior` : `${MINOR_PT[mod12(pc)]} menor`;
+}
+
+/**
+ * Posição do intervalo `semis` acima da tônica, numa corda `offset` cordas mais aguda.
+ * Calculada pela altura: casa = altura da tônica + semis − altura da corda solta.
+ */
+export function intervalTarget(root: Pos, semis: number, offset: number, tuning: Tuning = STANDARD_TUNING): Pos | null {
+  const toString = root.string - offset;
+  if (toString < 1) return null;
+  const fret = midiAt(root.string, root.fret, tuning) + semis - openMidi(toString, tuning);
+  return fret < 0 ? null : { string: toString, fret };
+}
+
+function pickIntervalPair(spec: QuizSpec, rng: Rng, tuning: Tuning) {
+  const semisList = spec.intervals ?? [7];
+  for (let i = 0; i < 400; i++) {
+    const semis = pick(rng, semisList);
+    const root = randomPosition(spec, rng, tuning);
+    const offset = pick(rng, spec.intervalMode === 'same' ? [0] : spec.intervalOffsets ?? [1]);
+    const t = intervalTarget(root, semis, offset, tuning);
+    if (!t || t.fret > 15 || (offset === 0 && semis === 0)) continue;
+    // na mesma corda: até a casa 12; atravessando cordas: desenho compacto (até 4 casas)
+    if (spec.intervalMode === 'same' ? t.fret > 12 : Math.abs(t.fret - root.fret) > 4) continue;
+    return { semis, root: { string: root.string, fret: root.fret }, target: t };
+  }
+  throw new Error('Não foi possível gerar exercício de intervalo.');
+}
+
+function pickBox(spec: QuizSpec, rng: Rng, tuning: Tuning) {
+  const scale = spec.scale ?? 'minorPentatonic';
+  for (let i = 0; i < 200; i++) {
+    const key = pick(rng, spec.keys ?? [9]);
+    const box = pick(rng, spec.boxes ?? [1]);
+    const notes = pentatonicBox(key, scale, box, tuning);
+    const max = Math.max(...notes.map((n) => n.fret));
+    if (max <= 15) return { key, box, scale, notes, max };
+  }
+  throw new Error('Não foi possível gerar exercício de box.');
+}
+
+/** Box no braço: tônicas marcadas como 1, demais notas sem rótulo, alvo com '?'. */
+function boxBoard(notes: ReturnType<typeof pentatonicBox>, max: number, target?: Pos): Board {
+  return {
+    maxFret: Math.max(12, max + 1),
+    marks: notes.map((n): BoardMark => {
+      if (target && n.string === target.string && n.fret === target.fret) {
+        return { string: n.string, fret: n.fret, role: 'focus', label: '?', answerLabel: n.label };
+      }
+      return n.isRoot
+        ? { string: n.string, fret: n.fret, role: 'root', label: '1' }
+        : { string: n.string, fret: n.fret, role: 'scale', answerLabel: n.label };
+    }),
+  };
+}
+
+function shuffled(rng: Rng, correct: string, pool: string[]): { options: string[]; answer: number } {
+  const options = [...new Set([correct, ...pool])];
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  return { options, answer: options.indexOf(correct) };
+}
+
+/** Dica de desenho para intervalos entre cordas vizinhas. */
+export function intervalHint(semis: number, from: number, to: number): string {
+  const skip = from - to;
+  const gb = from >= 3 && to <= 2;
+  if (skip === 0) return `Na mesma corda: ${semis} casas acima (${describeDistance(semis)}).`;
+  const shapes: Record<number, Record<number, number>> = { 1: { 3: -2, 4: -1, 5: 0, 7: 2 }, 2: { 10: 0, 12: 2 } };
+  const base = shapes[skip]?.[semis];
+  if (base !== undefined) {
+    const f = base + (gb ? 1 : 0);
+    const where = f === 0 ? 'na mesma casa' : `${Math.abs(f)} casa${Math.abs(f) > 1 ? 's' : ''} ${f > 0 ? 'para a frente' : 'para trás'}`;
+    return `${skip === 1 ? 'Uma corda' : 'Duas cordas'} acima, ${where}${gb ? ' (o par Sol–Si empurra o desenho uma casa para a frente)' : ''}.`;
+  }
+  return `Conte: ${describeDistance(semis)} acima da tônica. Cada corda mais aguda já está 5 semitons acima (4 entre Sol e Si).`;
 }
 
 const noteTopic = (s: number) => `nota:${s}`;
@@ -125,6 +241,68 @@ export function generateQuestion(kind: QuestionKind, spec: QuizSpec, rng: Rng, t
       if (!item) throw new Error('Nenhuma pergunta conceitual disponível.');
       return { kind, id, ...item };
     }
+    case 'find':
+      throw new Error("'find' é gerado pelos tipos interval-find e box-find.");
+    case 'interval-name': {
+      const { semis, root, target } = pickIntervalPair(spec, rng, tuning);
+      const { options, answer } = shuffled(rng, intervalName(semis), (spec.intervals ?? []).map(intervalName));
+      return {
+        kind: 'choice', id, topic: intervalTopic(semis, spec.intervalMode), options, answer,
+        prompt: 'Qual é o intervalo da nota marcada (?) em relação à tônica (em vermelho)?',
+        explain: `${intervalName(semis)} (${intervalLabel(semis)}): ${describeDistance(semis)} acima da tônica. ${intervalHint(semis, root.string, target.string)}`,
+        board: {
+          maxFret: Math.max(12, target.fret, root.fret),
+          marks: [
+            { ...root, role: 'root', label: '1', showName: true },
+            { ...target, role: 'focus', label: '?', answerLabel: intervalLabel(semis) },
+          ],
+        },
+      };
+    }
+    case 'interval-find': {
+      const { semis, root, target } = pickIntervalPair(spec, rng, tuning);
+      return {
+        kind: 'find', id, topic: intervalTopic(semis, spec.intervalMode), toString: target.string, targets: [target],
+        prompt: `Toque a ${intervalName(semis).toLowerCase()} (${intervalLabel(semis)}) acima desta tônica, na ${target.string}ª corda.`,
+        hint: intervalHint(semis, root.string, target.string),
+        board: { maxFret: Math.max(12, target.fret, root.fret), marks: [{ ...root, role: 'root', label: '1', showName: true }] },
+      };
+    }
+    case 'box-degree': {
+      const b = pickBox(spec, rng, tuning);
+      const t = pick(rng, b.notes);
+      const degrees = (b.scale === 'majorPentatonic' ? [0, 2, 4, 7, 9] : [0, 3, 5, 7, 10]).map(intervalLabel);
+      return {
+        kind: 'choice', id, topic: boxTopic(b.box, b.scale), options: degrees, answer: degrees.indexOf(t.label),
+        prompt: `Box ${b.box} de ${keyName(b.key, b.scale)}: qual é o grau da nota marcada (?)?`,
+        explain: `É o ${t.label}. Parta da tônica (1) mais próxima e conte o intervalo.`,
+        board: boxBoard(b.notes, b.max, t),
+      };
+    }
+    case 'box-find': {
+      const b = pickBox(spec, rng, tuning);
+      const t = pick(rng, b.notes.filter((n) => !n.isRoot));
+      return {
+        kind: 'find', id, topic: boxTopic(b.box, b.scale), toString: t.string, targets: [{ string: t.string, fret: t.fret }],
+        prompt: `Box ${b.box} de ${keyName(b.key, b.scale)}: toque o ${t.label} na ${t.string}ª corda.`,
+        hint: 'Cada corda do box tem duas notas. Parta da tônica (1) mais próxima e pense no intervalo que você aprendeu na Fase 2.',
+        board: boxBoard(b.notes, b.max),
+      };
+    }
+    case 'box-start': {
+      const b = pickBox(spec, rng, tuning);
+      const start = Math.min(...b.notes.filter((n) => n.string === 6).map((n) => n.fret));
+      const pool = [start - 2, start - 1, start + 1, start + 2, start + 3].filter((f) => f >= 0 && f <= 15).slice(0, 3);
+      const { options, answer } = shuffled(rng, `Casa ${start}`, pool.map((f) => `Casa ${f}`));
+      const rootName = (b.scale === 'majorPentatonic' ? MAJOR_PT : MINOR_PT)[mod12(b.key)];
+      return {
+        kind: 'choice', id, topic: 'penta:tom', options, answer,
+        prompt: `Em que casa da 6ª corda começa o box ${b.box} de ${keyName(b.key, b.scale)}?`,
+        explain: b.box === 1 && b.scale === 'minorPentatonic'
+          ? `O box 1 começa na tônica da 6ª corda: ${rootName} está na casa ${start}.`
+          : `O box ${b.box} de ${keyName(b.key, b.scale)} começa na casa ${start}.`,
+      };
+    }
   }
 }
 
@@ -149,7 +327,8 @@ export function signature(q: Question): string {
     case 'unison': return `u${q.from.string}-${q.from.fret}`;
     case 'octave': return `o${q.from.string}-${q.from.fret}-${q.toString}`;
     case 'distance': return `d${q.string}-${q.fretA}-${q.fretB}`;
-    case 'choice': return `c${q.prompt}`;
+    case 'choice': return `c${q.prompt}${q.board ? q.board.marks.map((m) => `${m.string}.${m.fret}`).join(',') : ''}`;
+    case 'find': return `f${q.prompt}${q.board.marks.map((m) => `${m.string}.${m.fret}`).join(',')}`;
   }
 }
 
@@ -179,6 +358,8 @@ export function correctPositions(q: Question, maxFret: number, tuning: Tuning = 
       }
       return out;
     }
+    case 'find':
+      return q.targets;
     default:
       return [];
   }
@@ -198,6 +379,8 @@ export function checkAnswer(q: Question, ans: Answer, tuning: Tuning = STANDARD_
       return 'index' in ans && DISTANCE_OPTIONS[ans.index]?.semitones === Math.abs(q.fretB - q.fretA);
     case 'choice':
       return 'index' in ans && ans.index === q.answer;
+    case 'find':
+      return 'pos' in ans && q.targets.some((t) => t.string === ans.pos.string && t.fret === ans.pos.fret);
   }
 }
 
@@ -223,6 +406,10 @@ export function hintFor(q: Question, tuning: Tuning = STANDARD_TUNING): string {
     case 'distance':
       return 'Conte as casas entre as duas notas: 1 casa = 1 semitom, 2 casas = 1 tom.';
     case 'choice':
-      return q.explain.split('.')[0] + '.';
+      return q.board
+        ? 'Ache a tônica (1) e conte os semitons até a nota marcada. Cada corda mais aguda já soma 5 semitons (4 entre Sol e Si).'
+        : q.explain.split('.')[0] + '.';
+    case 'find':
+      return q.hint;
   }
 }

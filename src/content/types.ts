@@ -8,7 +8,14 @@ export interface DiagramSpec {
   minFret?: number;
   maxFret?: number;
   /** naturals: notas naturais · pc: uma nota em todas as posições · octaves: posição + oitavas · open: cordas soltas · positions: lista explícita */
-  mode: 'naturals' | 'chromatic' | 'pc' | 'octaves' | 'open' | 'positions' | 'string';
+  mode: 'naturals' | 'chromatic' | 'pc' | 'octaves' | 'open' | 'positions' | 'string' | 'intervals' | 'box';
+  /** intervals: a partir de `from`, cada item é um intervalo (semitons) numa corda; a casa é calculada. */
+  intervals?: { semitones: number; string: number }[];
+  /** box: tonalidade (pc da tônica), escala e boxes a desenhar. */
+  boxes?: number[];
+  scale?: 'minorPentatonic' | 'majorPentatonic';
+  /** box: rótulo de cada nota — grau (padrão) ou nome. */
+  labels?: 'degree' | 'note';
   pc?: number;
   string?: number;
   from?: { string: number; fret: number };

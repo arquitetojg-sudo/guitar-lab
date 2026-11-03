@@ -201,7 +201,8 @@ describe('pular o que já sabe', () => {
     const pend = pendingPhaseLessons(1, p);
     expect(pend.length).toBe(9);
     expect(pend[0].id).toBe('f1-cordas-mi');
-    expect(pendingPhaseLessons(2, {})).toEqual([]);
+    expect(pendingPhaseLessons(2, {})).toHaveLength(4);
+    expect(pendingPhaseLessons(4, {})).toEqual([]);
   });
 
   it('prova da fase: ≥ 80% no geral conclui tudo', () => {

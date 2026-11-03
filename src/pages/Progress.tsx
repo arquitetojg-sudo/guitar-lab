@@ -46,7 +46,7 @@ export function ProgressPage() {
         </section>
         <section className="panel">
           <h2>Próximo conteúdo</h2>
-          {next ? <><p>{next.title}</p><a className="btn" href={href(`/aulas/${next.id}`)}>Abrir aula</a></> : <p className="muted">Fase 1 concluída.</p>}
+          {next ? <><p>{next.title}</p><a className="btn" href={href(`/aulas/${next.id}`)}>Abrir aula</a></> : <p className="muted">Fases 1 a 3 concluídas.</p>}
           <h3 style={{ marginTop: 16 }}>Metas pessoais</h3>
           <form className="row" onSubmit={(e) => {
             e.preventDefault();

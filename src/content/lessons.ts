@@ -1,5 +1,7 @@
 import type { ChoiceItem } from '../learning/exercises';
 import type { Lesson, Phase } from './types';
+import { PHASE2_LESSONS } from './lessonsPhase2';
+import { PHASE3_LESSONS } from './lessonsPhase3';
 
 /**
  * Trilha curricular. Cada aula segue ENTENDER → EXECUTAR → MEMORIZAR → APLICAR.
@@ -13,13 +15,13 @@ export const PHASES: Phase[] = [
     topics: ['Afinação padrão', 'Cordas soltas', 'Escala cromática', 'Tons e semitons', 'Localização de notas', 'Relação entre cordas', 'Padrões de oitava'],
   },
   {
-    id: 2, title: 'Intervalos e referências', available: false,
-    summary: 'Tônica, terças, quintas e oitavas no braço e no ouvido.',
+    id: 2, title: 'Intervalos e referências', available: true,
+    summary: 'Tônica, terças, quartas, quintas, sétima e oitava no braço: achar cada grau sem contar casas.',
     topics: ['Intervalos', 'Tônica e fundamental', 'Terças, quintas e oitavas', 'Intervalos a partir de uma referência'],
   },
   {
-    id: 3, title: 'Pentatônicas', available: false,
-    summary: 'Os cinco desenhos conectados, fundamentais em cada box e aplicação em blues e rock.',
+    id: 3, title: 'Pentatônicas', available: true,
+    summary: 'Os cinco boxes conectados, a tônica em cada um, mudança de tom e a pentatônica maior.',
     topics: ['Pentatônica menor e maior', 'Box 1', 'Cinco posições', 'Mudança de tonalidade', 'Frases curtas'],
   },
   {
@@ -413,6 +415,8 @@ export const LESSONS: Lesson[] = [
       ],
     },
   },
+  ...PHASE2_LESSONS,
+  ...PHASE3_LESSONS,
 ];
 
 export const lessonById = (id: string) => LESSONS.find((l) => l.id === id);

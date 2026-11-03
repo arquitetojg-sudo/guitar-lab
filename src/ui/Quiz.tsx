@@ -65,6 +65,7 @@ export function Quiz({ questions, level, lessonId, onFinish, onRestart, passScor
 
   const boardMax = useMemo(() => {
     if (!q) return 12;
+    if (q.kind === 'find' || (q.kind === 'choice' && q.board)) return q.board!.maxFret;
     if (q.kind === 'octave' || q.kind === 'unison') return 15;
     if (q.kind === 'locate') return Math.max(12, q.maxFret);
     if (q.kind === 'identify' && q.pos.fret <= 5) return 5;
@@ -155,6 +156,13 @@ export function Quiz({ questions, level, lessonId, onFinish, onRestart, passScor
     marks.push({ string: q.from.string, fret: q.from.fret, role: 'root', label: shortName(mod12(midiAt(q.from.string, q.from.fret)), prefs) });
     focusString = q.toString;
   }
+  if (q.kind === 'find' || (q.kind === 'choice' && q.board)) {
+    for (const m of q.board!.marks) {
+      const label = answered && m.answerLabel ? m.answerLabel : m.showName ? shortName(mod12(midiAt(m.string, m.fret)), prefs) : m.label;
+      marks.push({ string: m.string, fret: m.fret, role: m.role, label });
+    }
+    if (q.kind === 'find') focusString = q.toString;
+  }
   if (q.kind === 'distance') {
     for (const f of [q.fretA, q.fretB]) marks.push({ string: q.string, fret: f, role: 'focus', label: guided || answered ? shortName(mod12(midiAt(q.string, f)), { ...prefs, accidentals: 'both' }) : undefined });
     focusString = q.string;
@@ -167,7 +175,7 @@ export function Quiz({ questions, level, lessonId, onFinish, onRestart, passScor
     for (const p of sol) marks.push({ string: p.string, fret: p.fret, role: 'right', label: shortName(mod12(midiAt(p.string, p.fret)), prefs) });
   }
 
-  const usesBoardInput = q.kind === 'locate' || q.kind === 'unison' || q.kind === 'octave';
+  const usesBoardInput = q.kind === 'locate' || q.kind === 'unison' || q.kind === 'octave' || q.kind === 'find';
   const pcLabel = (pc: number) => shortName(pc, { ...prefs, accidentals: 'both' });
   const targetName = q.kind === 'locate' ? formatNote(spellPc(q.pc, st.accidentals === 'flat' ? 'flat' : 'sharp'), st.naming) + (isNaturalPc(q.pc) ? '' : ` / ${formatNote(spellPc(q.pc, st.accidentals === 'flat' ? 'sharp' : 'flat'), st.naming)}`) : '';
 
@@ -179,6 +187,7 @@ export function Quiz({ questions, level, lessonId, onFinish, onRestart, passScor
     case 'octave': prompt = `Encontre a oitava acima desta nota na ${q.toString}ª corda.`; break;
     case 'distance': prompt = `Qual é a distância entre as casas ${q.fretA} e ${q.fretB} da ${q.string}ª corda?`; break;
     case 'choice': prompt = q.prompt; break;
+    case 'find': prompt = q.prompt; break;
   }
 
   const elapsed = now - started.current;
@@ -194,7 +203,7 @@ export function Quiz({ questions, level, lessonId, onFinish, onRestart, passScor
       )}
       <p className="quiz-prompt" aria-live="polite">{prompt}</p>
 
-      {q.kind !== 'choice' && (
+      {(q.kind !== 'choice' || q.board) && (
         <div className="panel" style={{ padding: 6 }}>
           <Fretboard
             maxFret={boardMax}

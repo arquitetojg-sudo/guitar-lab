@@ -223,7 +223,7 @@ export function LessonPage({ id }: { id: string }) {
             nextL ? (
               <button className="btn primary" onClick={() => navigate(`/aulas/${nextL.id}`)}>Próxima aula: {nextL.title}</button>
             ) : (
-              <p className="notice ok">Você concluiu todo o conteúdo disponível da Fase 1. As próximas fases serão liberadas em novas versões.</p>
+              <p className="notice ok">Você concluiu todo o conteúdo disponível (Fases 1 a 3). As próximas fases serão liberadas em novas versões.</p>
             )
           ) : null}
         </section>

@@ -1,5 +1,5 @@
 import {
-  allPositions, formatNoteShort, formatPc, isNaturalPc, midiAt, mod12, spellPc, octavePositions, positionAt,
+  INTERVALS, allPositions, formatNoteShort, pentatonicBox, formatPc, isNaturalPc, midiAt, mod12, spellPc, octavePositions, positionAt,
   type AccidentalPref, type Naming, type SpelledNote,
 } from '../music';
 import type { DiagramSpec } from '../content/types';
@@ -54,6 +54,31 @@ export function marksFromSpec(spec: DiagramSpec, p: LabelPrefs): Mark[] {
         { string: src.string, fret: src.fret, role: 'root', label: label(src.pc) },
         ...octs.map((x): Mark => ({ string: x.string, fret: x.fret, role: 'octave', label: label(x.pc) })),
       ];
+    }
+    case 'intervals': {
+      if (!spec.from) return [];
+      const root = midiAt(spec.from.string, spec.from.fret);
+      const out: Mark[] = [{ string: spec.from.string, fret: spec.from.fret, role: 'root', label: spec.showNames ? shortName(mod12(root), p) : '1' }];
+      for (const it of spec.intervals ?? []) {
+        const fret = root + it.semitones - midiAt(it.string, 0);
+        if (fret < 0) continue;
+        const lab = it.semitones === 12 ? '8' : INTERVALS[it.semitones % 12].short;
+        out.push({ string: it.string, fret, role: it.semitones % 12 === 0 ? 'octave' : 'target', label: spec.showNames ? shortName(mod12(root + it.semitones), p) : lab });
+      }
+      return out;
+    }
+    case 'box': {
+      const seen = new Set<string>();
+      const out: Mark[] = [];
+      for (const b of spec.boxes ?? [1]) {
+        for (const n of pentatonicBox(spec.pc ?? 9, spec.scale ?? 'minorPentatonic', b)) {
+          const k = `${n.string}:${n.fret}`;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          out.push({ string: n.string, fret: n.fret, role: n.isRoot ? 'root' : 'scale', label: spec.labels === 'note' ? shortName(n.pc, p) : n.label });
+        }
+      }
+      return out;
     }
     case 'positions':
       return (spec.positions ?? []).map((x) => ({

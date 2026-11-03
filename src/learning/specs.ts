@@ -2,6 +2,8 @@ import type { QuizSpec } from './exercises';
 import { generateQuiz, mulberry32, type Question } from './exercises';
 
 const ALL = [6, 5, 4, 3, 2, 1];
+/** Tonalidades comuns no rock e no blues: Mi, Lá, Sol, Ré, Dó, Si. */
+export const KEYS = [4, 9, 7, 2, 0, 11];
 const ALL_PAIRS: [number, number][] = [[6, 4], [5, 3], [4, 2], [3, 1], [6, 3], [5, 2], [4, 1]];
 
 export interface PracticeSet {
@@ -35,6 +37,15 @@ export function specForTopic(topic: string): QuizSpec {
     case 'oitava:2c-gb': return { kinds: ['octave'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, octavePairs: [[4, 2], [3, 1]] };
     case 'oitava:3c': return { kinds: ['octave'], strings: ALL, minFret: 3, maxFret: 12, naturalsOnly: false, octavePairs: [[6, 3]] };
     case 'oitava:3c-gb': return { kinds: ['octave'], strings: ALL, minFret: 2, maxFret: 12, naturalsOnly: false, octavePairs: [[5, 2], [4, 1]] };
+    case 'intervalo:nome': return { kinds: ['interval-name'], strings: ALL, minFret: 0, maxFret: 7, naturalsOnly: false, intervals: [2, 3, 4, 5, 7, 12], intervalMode: 'same' };
+    case 'intervalo:quinta': return { kinds: ['interval-find', 'interval-name'], strings: [6, 5, 4, 3, 2], minFret: 1, maxFret: 10, naturalsOnly: false, intervals: [5, 7], intervalMode: 'cross' };
+    case 'intervalo:terca': return { kinds: ['interval-find', 'interval-name'], strings: [6, 5, 4, 3, 2], minFret: 2, maxFret: 10, naturalsOnly: false, intervals: [3, 4], intervalMode: 'cross' };
+    case 'intervalo:setima': return { kinds: ['interval-find', 'interval-name'], strings: [6, 5, 4], minFret: 1, maxFret: 10, naturalsOnly: false, intervals: [3, 4, 5, 7, 10, 12], intervalMode: 'cross', intervalOffsets: [1, 2] };
+    case 'penta:box1': return { kinds: ['box-find', 'box-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: KEYS, boxes: [1] };
+    case 'penta:tom': return { kinds: ['box-start', 'box-find'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: KEYS, boxes: [1] };
+    case 'penta:box2': case 'penta:box3': case 'penta:box4': case 'penta:box5':
+      return { kinds: ['box-find', 'box-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: KEYS, boxes: [Number(topic.slice(-1))] };
+    case 'penta:maior': return { kinds: ['box-find', 'box-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: [0, 2, 7, 9, 4], boxes: [1, 2], scale: 'majorPentatonic' };
     default: return PRACTICE_SETS[4].spec;
   }
 }

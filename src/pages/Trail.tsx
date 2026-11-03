@@ -16,7 +16,7 @@ export function TrailPage() {
         <h1>Aulas e trilhas</h1>
         <p className="muted">Cada aula: entender, executar, memorizar e aplicar. A seguinte só abre depois do quiz de memorização. Se já sabe o assunto, use "Já sei isso" dentro da aula ou a prova da fase.</p>
         <div className="meter" aria-label={`${prog.done} de ${prog.total} aulas concluídas`}><i style={{ width: `${(prog.done / prog.total) * 100}%` }} /></div>
-        <p className="small muted num" style={{ marginTop: 4 }}>{prog.done} de {prog.total} aulas da Fase 1</p>
+        <p className="small muted num" style={{ marginTop: 4 }}>{prog.done} de {prog.total} aulas</p>
       </div>
 
       {PHASES.map((ph) => (
@@ -36,7 +36,7 @@ export function TrailPage() {
             ) : null;
           })()}
           {ph.available ? (
-            modules.map((m) => (
+            modules.filter((m) => LESSONS.some((l) => l.phase === ph.id && l.module === m)).map((m) => (
               <div key={m} style={{ marginTop: 12 }}>
                 <h3>{m}</h3>
                 <ul className="clean">
