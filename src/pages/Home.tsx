@@ -82,7 +82,7 @@ export function HomePage() {
               <a className="btn" href={href(`/aulas/${lesson.id}`)}>Abrir aula</a>
             </>
           ) : (
-            <p className="muted">Fases 1 a 3 concluídas. Mantenha a revisão em dia enquanto as próximas fases não são liberadas.</p>
+            <p className="muted">Fases 1 a 4 concluídas. Mantenha a revisão em dia enquanto as próximas fases não são liberadas.</p>
           )}
           <div style={{ marginTop: 14 }}>
             <div className="meter"><i style={{ width: `${(trail.done / trail.total) * 100}%` }} /></div>

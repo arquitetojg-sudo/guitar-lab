@@ -35,7 +35,7 @@ export function ScalesPage() {
     <div className="stack-l">
       <div>
         <h1>Escalas e pentatônicas</h1>
-        <p className="muted">Prévia de consulta. As aulas da Fase 3 (pentatônicas) ainda não foram liberadas; os desenhos abaixo já são calculados pelo motor musical.</p>
+        <p className="muted">Consulta rápida. As aulas estão na Fase 3 da trilha; os desenhos abaixo são calculados pelo motor musical.</p>
       </div>
       <div className="row">
         <label className="field" style={{ width: 'auto' }}><span>Tonalidade</span>

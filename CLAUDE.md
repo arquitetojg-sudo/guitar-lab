@@ -34,14 +34,15 @@ React 19 + TypeScript + Vite 8, Vitest, vite-plugin-pwa (Workbox, registerType '
 - Fase 1 completa: 11 aulas (afinação, cromática, notas por corda, acidentes, uníssono, 4 aulas de oitavas).
 - Fase 2 (`src/content/lessonsPhase2.ts`): 4 aulas de intervalos (nomes, quinta/quarta, terças, mapa em volta da tônica).
 - Fase 3 (`src/content/lessonsPhase3.ts`): 6 aulas de pentatônica (box 1, mudar de tom, boxes 2, 3, 4–5, pentatônica maior).
+- Fase 4 (`src/content/lessonsPhase4.ts`): 6 aulas de acordes e harmonia (power chords, tríades, campo maior, campo menor, progressões, escala × acorde). Geradores em `src/learning/harmony.ts` (`chord-name`, `chord-quality`, `chord-spell`, `field-chord`, `field-degree`, `progression`, `improv-scale`); desenhos de acorde limitados à casa 12 (o violão de estudo do usuário vai até a 12).
 - Exercícios novos em `exercises.ts`: `interval-name`, `interval-find`, `box-degree`, `box-find`, `box-start` (viram perguntas `choice` com braço ou `find`, com alvos calculados pela altura). Diagramas novos: modos `intervals` e `box`.
 - Mapa interativo, exercícios em 3 níveis, cards (72 padrão + pessoais), treino do dia, técnica com metrônomo, análise de músicas, evolução, configurações, backup, PWA offline.
-- 92 testes passando (`src/learning/phases23.test.ts` cobre Fases 2 e 3). Validado em navegador (mobile/desktop, claro/escuro, offline, persistência).
+- 105 testes passando (`phases23.test.ts` cobre Fases 2 e 3; `phase4.test.ts` cobre a Fase 4). Validado em navegador (mobile/desktop, claro/escuro, offline, persistência).
 - Prévias de consulta sem aulas: Escalas/pentatônicas, Acordes/campo harmônico.
 - Placeholders honestos: Improvisação, Ouvido musical.
 
 ## Próximo passo combinado
-Fases 1–3 liberadas. Próximas: Fase 4 (acordes e harmonia), Fase 5 (técnica), Fase 6 (improvisação). Publicado em https://arquitetojg-sudo.github.io/guitar-lab/ (repo público arquitetojg-sudo/guitar-lab). Todo push na `master` roda testes + build e publica via `.github/workflows/deploy.yml`. O `gh` está em `%LOCALAPPDATA%\Microsoft\WinGet\Links\gh.exe`.
+Fases 1–4 liberadas. Próximas: Fase 5 (técnica), Fase 6 (improvisação). Publicado em https://arquitetojg-sudo.github.io/guitar-lab/ (repo público arquitetojg-sudo/guitar-lab). Todo push na `master` roda testes + build e publica via `.github/workflows/deploy.yml`. O `gh` está em `%LOCALAPPDATA%\Microsoft\WinGet\Links\gh.exe`.
 - "Já sei isso" por aula e prova da fase (`/prova/1`) permitem pular conteúdo já conhecido com ≥ 80% sem ajuda (`testedOutAt` no progresso).
 
 ## Forma de trabalhar

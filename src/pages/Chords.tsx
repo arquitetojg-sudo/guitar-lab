@@ -49,7 +49,7 @@ export function ChordsPage() {
     <div className="stack-l">
       <div>
         <h1>Acordes e campo harmônico</h1>
-        <p className="muted">Prévia de consulta. As aulas da Fase 4 ainda não foram liberadas; os acordes abaixo são construídos empilhando terças da escala.</p>
+        <p className="muted">Consulta rápida. As aulas estão na Fase 4 da trilha; os acordes abaixo são construídos empilhando terças da escala.</p>
       </div>
       <div className="row">
         <label className="field" style={{ width: 'auto' }}><span>Tonalidade</span>

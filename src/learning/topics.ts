@@ -32,6 +32,12 @@ export const TOPICS: TopicDef[] = [
   { id: 'penta:box4', label: 'Pentatônica menor: box 4', lessonId: 'p3-box45' },
   { id: 'penta:box5', label: 'Pentatônica menor: box 5', lessonId: 'p3-box45' },
   { id: 'penta:maior', label: 'Pentatônica maior', lessonId: 'p3-maior' },
+  { id: 'acorde:power', label: 'Power chords pelo nome', lessonId: 'p4-power' },
+  { id: 'acorde:triade', label: 'Tríades maior, menor e diminuta', lessonId: 'p4-triades' },
+  { id: 'campo:maior', label: 'Campo harmônico maior', lessonId: 'p4-campo-maior' },
+  { id: 'campo:menor', label: 'Campo harmônico menor', lessonId: 'p4-campo-menor' },
+  { id: 'progressao', label: 'Progressões por graus', lessonId: 'p4-progressoes' },
+  { id: 'harmonia:escala', label: 'Qual escala usar sobre os acordes', lessonId: 'p4-escala-acorde' },
 ];
 
 /** Assunto de um exercício de intervalo. */

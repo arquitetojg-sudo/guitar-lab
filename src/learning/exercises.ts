@@ -3,6 +3,7 @@ import {
   type FretPosition, type Tuning,
 } from '../music';
 import { boxTopic, intervalTopic, octaveTopic } from './topics';
+import { generateHarmony, type HarmonyKind } from './harmony';
 
 export type Rng = () => number;
 
@@ -52,7 +53,7 @@ export interface Board {
 }
 
 /** Tipos que o QuizSpec pode pedir. Os de intervalo e box viram perguntas 'choice' ou 'find'. */
-export type QuestionKind = Question['kind'] | 'interval-name' | 'interval-find' | 'box-degree' | 'box-find' | 'box-start';
+export type QuestionKind = Question['kind'] | 'interval-name' | 'interval-find' | 'box-degree' | 'box-find' | 'box-start' | HarmonyKind;
 
 export type Answer = { pos: Pos } | { pc: number } | { index: number };
 
@@ -84,6 +85,11 @@ export interface QuizSpec {
   keys?: number[];
   boxes?: number[];
   scale?: 'minorPentatonic' | 'majorPentatonic';
+  /** Fase 4: qualidades de acorde (ids de CHORD_QUALITIES), cordas da fundamental, modo e progressões (graus). */
+  chordQualities?: string[];
+  chordRootStrings?: number[];
+  harmonyMode?: 'major' | 'naturalMinor';
+  progressions?: number[][];
 }
 
 export const intervalLabel = (s: number) => (s === 12 ? '8' : INTERVALS[s].short);
@@ -243,6 +249,8 @@ export function generateQuestion(kind: QuestionKind, spec: QuizSpec, rng: Rng, t
     }
     case 'find':
       throw new Error("'find' é gerado pelos tipos interval-find e box-find.");
+    case 'chord-name': case 'chord-quality': case 'chord-spell': case 'field-chord': case 'field-degree': case 'progression': case 'improv-scale':
+      return generateHarmony(kind, spec, rng, id, tuning);
     case 'interval-name': {
       const { semis, root, target } = pickIntervalPair(spec, rng, tuning);
       const { options, answer } = shuffled(rng, intervalName(semis), (spec.intervals ?? []).map(intervalName));

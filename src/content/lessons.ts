@@ -2,6 +2,7 @@ import type { ChoiceItem } from '../learning/exercises';
 import type { Lesson, Phase } from './types';
 import { PHASE2_LESSONS } from './lessonsPhase2';
 import { PHASE3_LESSONS } from './lessonsPhase3';
+import { PHASE4_LESSONS } from './lessonsPhase4';
 
 /**
  * Trilha curricular. Cada aula segue ENTENDER → EXECUTAR → MEMORIZAR → APLICAR.
@@ -25,8 +26,8 @@ export const PHASES: Phase[] = [
     topics: ['Pentatônica menor e maior', 'Box 1', 'Cinco posições', 'Mudança de tonalidade', 'Frases curtas'],
   },
   {
-    id: 4, title: 'Acordes e harmonia', available: false,
-    summary: 'Tríades, power chords, graus, campo harmônico e progressões.',
+    id: 4, title: 'Acordes e harmonia', available: true,
+    summary: 'Power chords, tríades, campo harmônico maior e menor, progressões em graus e qual escala usar sobre os acordes.',
     topics: ['Tríades', 'Power chords', 'Campo harmônico maior e menor', 'Progressões', 'Escalas × acordes'],
   },
   {
@@ -417,6 +418,7 @@ export const LESSONS: Lesson[] = [
   },
   ...PHASE2_LESSONS,
   ...PHASE3_LESSONS,
+  ...PHASE4_LESSONS,
 ];
 
 export const lessonById = (id: string) => LESSONS.find((l) => l.id === id);

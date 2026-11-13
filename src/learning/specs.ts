@@ -45,6 +45,12 @@ export function specForTopic(topic: string): QuizSpec {
     case 'penta:tom': return { kinds: ['box-start', 'box-find'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: KEYS, boxes: [1] };
     case 'penta:box2': case 'penta:box3': case 'penta:box4': case 'penta:box5':
       return { kinds: ['box-find', 'box-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: KEYS, boxes: [Number(topic.slice(-1))] };
+    case 'acorde:power': return { kinds: ['chord-name'], strings: ALL, minFret: 0, maxFret: 10, naturalsOnly: false, chordQualities: ['power'], chordRootStrings: [6, 5] };
+    case 'acorde:triade': return { kinds: ['chord-name', 'chord-quality', 'chord-spell'], strings: ALL, minFret: 1, maxFret: 10, naturalsOnly: false, chordQualities: ['major', 'minor', 'dim'], chordRootStrings: [6, 5, 4], keys: KEYS };
+    case 'campo:maior': return { kinds: ['field-chord', 'field-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: [0, 7, 2, 9, 4, 5], harmonyMode: 'major' };
+    case 'campo:menor': return { kinds: ['field-chord', 'field-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: [9, 4, 2, 7, 11], harmonyMode: 'naturalMinor' };
+    case 'progressao': return { kinds: ['progression'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: [0, 7, 2, 9, 4], progressions: [[1, 4, 5], [1, 5, 6, 4], [2, 5, 1], [6, 4, 1, 5]] };
+    case 'harmonia:escala': return { kinds: ['improv-scale'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: [0, 7, 2, 9, 4] };
     case 'penta:maior': return { kinds: ['box-find', 'box-degree'], strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, keys: [0, 2, 7, 9, 4], boxes: [1, 2], scale: 'majorPentatonic' };
     default: return PRACTICE_SETS[4].spec;
   }
