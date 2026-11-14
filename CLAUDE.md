@@ -36,8 +36,10 @@ React 19 + TypeScript + Vite 8, Vitest, vite-plugin-pwa (Workbox, registerType '
 - Fase 3 (`src/content/lessonsPhase3.ts`): 6 aulas de pentatônica (box 1, mudar de tom, boxes 2, 3, 4–5, pentatônica maior).
 - Fase 4 (`src/content/lessonsPhase4.ts`): 6 aulas de acordes e harmonia (power chords, tríades, campo maior, campo menor, progressões, escala × acorde). Geradores em `src/learning/harmony.ts` (`chord-name`, `chord-quality`, `chord-spell`, `field-chord`, `field-degree`, `progression`, `improv-scale`); desenhos de acorde limitados à casa 12 (o violão de estudo do usuário vai até a 12).
 - Exercícios novos em `exercises.ts`: `interval-name`, `interval-find`, `box-degree`, `box-find`, `box-start` (viram perguntas `choice` com braço ou `find`, com alvos calculados pela altura). Diagramas novos: modos `intervals` e `box`.
+- Licks e riffs (`/licks`, `src/content/licks.ts`): riffs, frases e licks "no estilo de" (frases originais, não transcrições) na pentatônica de Sol menor até a casa 14 (o usuário alcança até a 14 no violão). Notação compacta de tablatura com ritmo/técnicas em `src/music/tab.ts` (parser valida ligados/bends e compassos). Teste confere pela altura que toda nota está na escala e nos boxes declarados.
+- Bases para improvisar (`/bases`, `src/content/backings.ts`): 6 bases em Sol menor sintetizadas (bateria, baixo, acordes) em `src/ui/phrasePlayer.ts`, que também toca os licks com bend/slide/vibrato.
 - Mapa interativo, exercícios em 3 níveis, cards (72 padrão + pessoais), treino do dia, técnica com metrônomo, análise de músicas, evolução, configurações, backup, PWA offline.
-- 105 testes passando (`phases23.test.ts` cobre Fases 2 e 3; `phase4.test.ts` cobre a Fase 4). Validado em navegador (mobile/desktop, claro/escuro, offline, persistência).
+- 133 testes passando (`src/content/licks.test.ts` cobre tablatura, licks e bases) (`phases23.test.ts` cobre Fases 2 e 3; `phase4.test.ts` cobre a Fase 4). Validado em navegador (mobile/desktop, claro/escuro, offline, persistência).
 - Prévias de consulta sem aulas: Escalas/pentatônicas, Acordes/campo harmônico.
 - Placeholders honestos: Improvisação, Ouvido musical.
 

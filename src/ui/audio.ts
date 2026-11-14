@@ -25,7 +25,7 @@ export function getAudio(): AudioContext | null {
   return ctx;
 }
 
-function pluckBuffer(ac: AudioContext, midi: number, instrument: Instrument): AudioBuffer {
+export function pluckBuffer(ac: AudioContext, midi: number, instrument: Instrument): AudioBuffer {
   const key = `${midi}-${instrument}`;
   const hit = cache.get(key);
   if (hit) return hit;

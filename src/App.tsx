@@ -19,6 +19,8 @@ import { ProgressPage } from './pages/Progress';
 import { SettingsPage } from './pages/Settings';
 import { SessionPage } from './pages/Session';
 import { MorePage } from './pages/More';
+import { LicksPage } from './pages/Licks';
+import { BackingsPage } from './pages/Backings';
 import { useUpdateBanner } from './app/pwa';
 
 export interface NavItem {
@@ -34,6 +36,8 @@ export const NAV_MAIN: NavItem[] = [
   { to: '/cards', label: 'Cards', icon: 'cards' },
 ];
 export const NAV_SECONDARY: NavItem[] = [
+  { to: '/licks', label: 'Licks e riffs', icon: 'licks' },
+  { to: '/bases', label: 'Bases para improvisar', icon: 'backing' },
   { to: '/tecnica', label: 'Técnica e agilidade', icon: 'technique' },
   { to: '/escalas', label: 'Escalas e pentatônicas', icon: 'scales' },
   { to: '/acordes', label: 'Acordes e campo harmônico', icon: 'chords' },
@@ -59,6 +63,8 @@ function Page({ path, parts }: { path: string; parts: string[] }): ReactNode {
     case 'prova': return <PhaseTestPage key={b} phase={Number(b) || 1} />;
     case 'treino': return <PracticePage />;
     case 'cards': return <CardsPage />;
+    case 'licks': return <LicksPage id={b} />;
+    case 'bases': return <BackingsPage id={b} />;
     case 'tecnica': return <TechniquePage />;
     case 'escalas': return <ScalesPage />;
     case 'acordes': return <ChordsPage />;

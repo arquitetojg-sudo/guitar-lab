@@ -10,11 +10,13 @@ const CONTENT = {
       'Desafios com restrição (ex.: improvisar com só três notas) e registro de observações.',
     ],
     now: [
+      { to: '/bases', label: 'Bases para improvisar', tip: 'Seis bases sintetizadas em Sol menor, com o acorde da vez e as notas-alvo destacadas no braço.' },
+      { to: '/licks', label: 'Licks e riffs', tip: 'Riffs, frases e licks no estilo de guitarristas conhecidos, na pentatônica de Sol menor, com tablatura e áudio.' },
       { to: '/mapa', label: 'Ver notas-alvo no mapa', tip: 'Em "Escalas e acordes", escolha uma escala e sobreponha um acorde: as notas do acorde que estão na escala aparecem como alvo.' },
       { to: '/acordes', label: 'Campo harmônico', tip: 'Monte I–IV–V em qualquer tonalidade e veja as notas de cada acorde.' },
       { to: '/tecnica', label: 'Metrônomo', tip: 'Improvise sobre o clique com a restrição da aula de oitavas (uma nota só, várias oitavas).' },
     ],
-    note: 'As bases precisam ser gravações originais ou licenciadas. Nenhuma música protegida será reproduzida.',
+    note: 'As bases são sintetizadas no próprio app. Nenhuma música protegida é reproduzida.',
   },
   ouvido: {
     title: 'Ouvido musical',
